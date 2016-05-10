@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project(qdm)
+add_executable(qdm main.cpp FileDownloader.cpp)
+target_link_libraries(qdm boost_system http_parser)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
