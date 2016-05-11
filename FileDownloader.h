@@ -8,6 +8,7 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <http_parser.h>
+#include <boost/network/uri.hpp>
 
 class FileDownloader
 {
@@ -48,8 +49,14 @@ public:
     {
         if (!ec)
         {
+            boost::network::uri::uri uri(download_file_name);
+            if (!uri.is_valid())
+            {
+                tcp_socket.close();
+                return;
+            }
             std::string req =
-                            "GET / HTTP/1.1\r\nHost: theboostcpplibraries.com\r\n\r\n";
+                            "GET /" + uri.path() + " HTTP/1.1\r\nHost: " + uri.host() + "\r\n\r\n";
             write(tcp_socket, boost::asio::buffer(req));
             tcp_socket.async_read_some(boost::asio::buffer(bytes),
                                        boost::bind(&FileDownloader::read_handler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
@@ -64,7 +71,13 @@ public:
 
     void start_download()
     {
-        boost::asio::ip::tcp::resolver::query query{"theboostcpplibraries.com", "80"};
+        boost::network::uri::uri uri(download_file_name);
+        if(!uri.is_valid())
+        {
+            printf("Requested uri is not valid.\n");
+            return;
+        }
+        boost::asio::ip::tcp::resolver::query query{uri.host(), "80"};
         resolve.async_resolve(query, boost::bind(&FileDownloader::resolve_handler, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
         ioservice.run();
     }
