@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
     if (argc < 3)
     {
-        printf("usage: qdm [file to download] [output]");
+        printf("usage: qdm [file to download] [output]\n");
         return -1;
     }
     FileDownloader file_downloader;

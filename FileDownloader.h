@@ -103,8 +103,9 @@ public:
             output_stream.close();
             printf("Download completed.\n");
         }
-        float completed_percent = (byte_downloaded / (float)parser.content_length) * 100;
-        printf("%f\n", completed_percent);
+        float completed_percent = (static_cast<float>(byte_downloaded) / total_length) * 100;
+
+        printf("completed %f\n", completed_percent);
 
     }
 
@@ -112,6 +113,14 @@ public:
     {
         FileDownloader* self = reinterpret_cast<FileDownloader*>(p->data);
         self->on_body(at, length);
+        return 0;
+    }
+
+    static int cb_headers_complete(http_parser* p)
+    {
+        FileDownloader* self = reinterpret_cast<FileDownloader*>(p->data);
+        self->total_length = p->content_length;
+        printf("content-length: %d\n", p->content_length);
         return 0;
     }
 
@@ -126,6 +135,7 @@ private:
     boost::asio::ip::tcp::resolver resolve;
     std::fstream output_stream;
     unsigned int byte_downloaded = 0;
+    unsigned int total_length;
 
 };
 
